@@ -52,7 +52,11 @@ export class UserService {
     }
 
     async exists(id: number){
-        const user = await this.get(id)
+        const user = await this.prisma.user.count({
+            where: {
+                id
+            }
+        })
 
         if(!user){
             throw new NotFoundException(`O usuario do id ${id} nao existe!`)
