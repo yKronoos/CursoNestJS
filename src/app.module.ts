@@ -7,9 +7,31 @@ import { AuthModule } from './auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
 @Module({
   imports: [
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.ethereal.email',
+        port: 587,
+        auth: {
+            user: 'michale82@ethereal.email',
+            pass: 'XXUD2eyYn9HRrkwfAS'
+        }
+      },
+      defaults: {
+        from: '"Tester" <michale82@ethereal.email>',
+      },
+      template: {
+        dir: __dirname + '/templates',
+        adapter: new PugAdapter(), // or new PugAdapter() or new EjsAdapter()
+        options: {
+          strict: true,
+        },
+      },
+    }),
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot([{
       ttl: 60,

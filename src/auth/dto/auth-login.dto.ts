@@ -1,12 +1,10 @@
-import { IsEmail, IsStrongPassword } from "class-validator"
+import { IsEmail, IsString, IsStrongPassword } from "class-validator"
 
 export class AuthLoginDTO{
 
     @IsEmail()
     email: string
 
-    @IsStrongPassword({
-        minLength:6
-    })
+    @IsString()
     password: string
 }

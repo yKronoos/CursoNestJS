@@ -5,7 +5,7 @@ export class AuthResetDTO{
     @IsStrongPassword({
         minLength:6
     })
-    passwoord: string
+    password: string
 
     @IsJWT()
     token: string
