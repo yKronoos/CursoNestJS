@@ -1,11 +1,12 @@
-import { User } from '@prisma/client';
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { PrismaService } from "src/prisma/prisma.service";
 import { CreateUserDTO } from 'src/user/dto/create-user.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
+import { InjectRepository } from "@nestjs/typeorm";
+import { UserEntity } from "src/user/entity/user.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthService{
@@ -15,12 +16,13 @@ export class AuthService{
 
     constructor(
         private readonly jwtService: JwtService,
-        private readonly prismaService: PrismaService,
         private readonly userService: UserService,
-        private readonly mailer: MailerService
+        private readonly mailer: MailerService,
+        @InjectRepository(UserEntity)
+        private usersRepository: Repository<UserEntity>
     ){}
 
-    async createToken(user: User){
+    async createToken(user: UserEntity){
 
         const accessToken = this.jwtService.sign({
             id: user.id,
@@ -63,7 +65,7 @@ export class AuthService{
     }
 
     async login(email: string, password: string){
-        const user = await this.prismaService.user.findFirst({
+        const user = await this.usersRepository.findOne({
             where:{
                 email
             }
@@ -83,7 +85,7 @@ export class AuthService{
     }
 
     async forget(email: string){
-        const user = await this.prismaService.user.findFirst({
+        const user = await this.usersRepository.findOne({
             where:{
                 email
             }
@@ -133,18 +135,14 @@ export class AuthService{
 
             password = await bcrypt.hash(password, salt)
 
-            const user = await this.prismaService.user.update({
-                where: {
-                    id: data.id
-                },
-                data:{
-                    password
-                }
+            await this.usersRepository.update(Number(data.id),{
+                password
             })
+
+            const user = await this.userService.get(Number(data.id))
 
             return this.createToken(user)
 
-            return data
         }catch(e) {
             throw new BadRequestException(e)
         }
