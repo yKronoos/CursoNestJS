@@ -1,4 +1,3 @@
-import { accessToken } from './../src/testing/accessToken.mock';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -9,8 +8,8 @@ import dataSource from '../typeorm/data-source';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
-  let accessToken: string
-  let userId: number
+  let accessToken: string;
+  let userId: number;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -22,8 +21,8 @@ describe('AppController (e2e)', () => {
   });
 
   afterEach(() => {
-    app.close()
-  })
+    app.close();
+  });
 
   it('/ (GET)', () => {
     return request(app.getHttpServer())
@@ -37,8 +36,8 @@ describe('AppController (e2e)', () => {
       .post('/auth/register')
       .send(createUserDTO);
 
-    expect(response.statusCode).toEqual(201)
-    expect(typeof response.body.accessToken).toEqual('string')
+    expect(response.statusCode).toEqual(201);
+    expect(typeof response.body.accessToken).toEqual('string');
   });
 
   it('Tentar fazer login com novo usuario', async () => {
@@ -46,12 +45,12 @@ describe('AppController (e2e)', () => {
       .post('/auth/login')
       .send({
         email: createUserDTO.email,
-        password: createUserDTO.password
+        password: createUserDTO.password,
       });
 
-    expect(response.statusCode).toEqual(201)
-    expect(typeof response.body.accessToken).toEqual('string')
-    accessToken = response.body.accessToken
+    expect(response.statusCode).toEqual(201);
+    expect(typeof response.body.accessToken).toEqual('string');
+    accessToken = response.body.accessToken;
   });
 
   it('Obter dados do usuario', async () => {
@@ -60,21 +59,21 @@ describe('AppController (e2e)', () => {
       .set('Authorization', `bearer ${accessToken}`)
       .send();
 
-    expect(response.statusCode).toEqual(201)
-    expect(typeof response.body.id).toEqual('number')
-    expect(response.body.role).toEqual(Role.User)
+    expect(response.statusCode).toEqual(201);
+    expect(typeof response.body.id).toEqual('number');
+    expect(response.body.role).toEqual(Role.User);
 
-    userId = response.body.id
+    userId = response.body.id;
   });
 
   it('Registrar novo usuario admin', async () => {
     const response = await request(app.getHttpServer())
       .post('/auth/register')
-      .send({...createUserDTO, role: Role.Admin, email: "lolo@gmail.com"});
+      .send({ ...createUserDTO, role: Role.Admin, email: 'lolo@gmail.com' });
 
-    expect(response.statusCode).toEqual(201)
-    expect(typeof response.body.accessToken).toEqual('string')
-    accessToken = response.body.accessToken
+    expect(response.statusCode).toEqual(201);
+    expect(typeof response.body.accessToken).toEqual('string');
+    accessToken = response.body.accessToken;
   });
 
   it('Verificar se o novo user e User', async () => {
@@ -83,11 +82,11 @@ describe('AppController (e2e)', () => {
       .set('Authorization', `bearer ${accessToken}`)
       .send();
 
-    expect(response.statusCode).toEqual(201)
-    expect(typeof response.body.id).toEqual('number')
-    expect(response.body.role).toEqual(Role.User)
+    expect(response.statusCode).toEqual(201);
+    expect(typeof response.body.id).toEqual('number');
+    expect(response.body.role).toEqual(Role.User);
 
-    userId = response.body.id
+    userId = response.body.id;
   });
 
   it('Tentar ver todos os users', async () => {
@@ -96,26 +95,26 @@ describe('AppController (e2e)', () => {
       .set('Authorization', `bearer ${accessToken}`)
       .send();
 
-    expect(response.statusCode).toEqual(403)
-    expect(response.body.error).toEqual('Forbidden')
+    expect(response.statusCode).toEqual(403);
+    expect(response.body.error).toEqual('Forbidden');
   });
 
   it('Alterando user para admin', async () => {
-      const ds = await dataSource.initialize()
-      const queryRunner = ds.createQueryRunner()
+    const ds = await dataSource.initialize();
+    const queryRunner = ds.createQueryRunner();
 
-      await queryRunner.query(`
+    await queryRunner.query(`
         UPDATE users SET role = ${Role.Admin} WHERE id = ${userId}
-      `)
+      `);
 
-      const rows = await queryRunner.query(`
+    const rows = await queryRunner.query(`
         SELECT * FROM users WHERE id = ${userId}
-      `)
-      
-      ds.destroy()
+      `);
 
-      expect(rows.length).toEqual(1)
-      expect(rows[0].role).toEqual(Role.Admin)
+    ds.destroy();
+
+    expect(rows.length).toEqual(1);
+    expect(rows[0].role).toEqual(Role.Admin);
   });
 
   it('Tentar ver todos os users, agora como admin', async () => {
@@ -124,7 +123,7 @@ describe('AppController (e2e)', () => {
       .set('Authorization', `bearer ${accessToken}`)
       .send();
 
-    expect(response.statusCode).toEqual(200)
-    expect(response.body.length).toEqual(2)
+    expect(response.statusCode).toEqual(200);
+    expect(response.body.length).toEqual(2);
   });
 });

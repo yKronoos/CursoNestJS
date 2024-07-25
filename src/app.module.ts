@@ -2,7 +2,6 @@ import { forwardRef, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -19,9 +18,9 @@ import { UserEntity } from './user/entity/user.entity';
         host: 'smtp.ethereal.email',
         port: 587,
         auth: {
-            user: 'michale82@ethereal.email',
-            pass: 'XXUD2eyYn9HRrkwfAS'
-        }
+          user: 'michale82@ethereal.email',
+          pass: 'XXUD2eyYn9HRrkwfAS',
+        },
       },
       defaults: {
         from: '"Tester" <michale82@ethereal.email>',
@@ -35,12 +34,14 @@ import { UserEntity } from './user/entity/user.entity';
       },
     }),
     ConfigModule.forRoot({
-      envFilePath:  process.env.ENV === 'test' ? '.env.test' : '.env'
+      envFilePath: process.env.ENV === 'test' ? '.env.test' : '.env',
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 10,
+      },
+    ]),
     forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
     TypeOrmModule.forRoot({
@@ -51,17 +52,17 @@ import { UserEntity } from './user/entity/user.entity';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [UserEntity],
-      synchronize: process.env.ENV === "development"
-    })
+      synchronize: process.env.ENV === 'development',
+    }),
   ],
   controllers: [AppController],
   providers: [
-    AppService, 
+    AppService,
     {
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard
-    }
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
-  exports: [AppService]
+  exports: [AppService],
 })
 export class AppModule {}

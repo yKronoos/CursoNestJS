@@ -7,11 +7,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   //Liberar somente para um dominio
-  app.enableCors()
+  app.enableCors();
 
-  app.useGlobalPipes(new ValidationPipe())
-  
-  app.useGlobalInterceptors(new LogInterceptor())
+  app.useGlobalPipes(new ValidationPipe());
+
+  app.useGlobalInterceptors(new LogInterceptor());
 
   await app.listen(3000);
 }

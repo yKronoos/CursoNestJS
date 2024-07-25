@@ -1,10 +1,9 @@
-import { IsEmail, IsString, IsStrongPassword } from "class-validator"
+import { IsEmail, IsString } from 'class-validator';
 
-export class AuthLoginDTO{
+export class AuthLoginDTO {
+  @IsEmail()
+  email: string;
 
-    @IsEmail()
-    email: string
-
-    @IsString()
-    password: string
+  @IsString()
+  password: string;
 }
