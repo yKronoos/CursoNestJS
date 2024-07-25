@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateUserDTO } from "./dto/create-user.dto";
 import { UpdatePatchUserDTO } from "./dto/update-patch-user.dto";
 import * as bcrypt from 'bcrypt';
@@ -16,6 +16,14 @@ export class UserService {
 
     async create( data : CreateUserDTO){
 
+        const exits = await this.usersRepository.existsBy({
+            email: data.email
+        })
+
+        if(exits){
+            throw new BadRequestException('Email ja esta sendo usado')
+        }
+
         const salt = await bcrypt.genSalt()
 
         data.password = await bcrypt.hash(data.password, salt)
@@ -32,6 +40,9 @@ export class UserService {
     }
 
     async get(id: number){
+
+        await this.exists(id)
+
         return this.usersRepository.findOneBy({
             id
         })
@@ -60,7 +71,10 @@ export class UserService {
 
         await this.exists(id)
 
-        return this.usersRepository.delete(id)
+        await this.usersRepository.delete(id)
+
+        return true
+
     }
 
     async exists(id: number){

@@ -1,16 +1,16 @@
 import { BadRequestException, Body, Controller, FileTypeValidator, Headers, MaxFileSizeValidator, ParseFilePipe, Post, Req, UploadedFile, UploadedFiles, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthForgetDTO } from "./dto/auth-forget.dto";
 import { AuthLoginDTO } from "./dto/auth-login.dto";
-import { CreateUserDTO } from "src/user/dto/create-user.dto";
 import { AuthResetDTO } from "./dto/auth-reset.dto";
-import { UserService } from "src/user/user.service";
 import { AuthService } from "./auth.service";
-import { AuthGuard } from "src/guards/auth.guard";
-import { User } from "src/decorators/user.decorator";
 import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { writeFile } from "fs/promises";
 import { join } from "path";
-import { FileService } from "src/file/file.service";
+import { FileService } from "../file/file.service";
+import { AuthGuard } from "../guards/auth.guard";
+import { User } from "../decorators/user.decorator";
+import { CreateUserDTO } from "../user/dto/create-user.dto";
+import { UserEntity } from "../user/entity/user.entity";
 
 @Controller('auth')
 export class AuthController{
@@ -42,9 +42,9 @@ export class AuthController{
 
     @UseGuards(AuthGuard)
     @Post('me')
-    async me(@User() req){
+    async me(@User() user: UserEntity){
 
-        return {user: req}
+        return user
 
         //return this.authService.checkToken((token ?? '').split(' ')[1])
     }
@@ -53,7 +53,7 @@ export class AuthController{
     @UseGuards(AuthGuard)
     @Post('photo')
     async uploadPhoto(
-        @User() user, 
+        @User() user: UserEntity, 
         @UploadedFile(new ParseFilePipe({
             validators: [
                new FileTypeValidator({fileType: 'image/png'}),
@@ -62,14 +62,14 @@ export class AuthController{
         })) photo: Express.Multer.File
     ){
 
-        const path = join(__dirname, '..', '..', 'storage', 'photos', `photo-${user.id}.png`)
+        const filename = `photo-${user.id}.png`
         try{
-           await this.fileService.upload(photo, path)
+           await this.fileService.upload(photo, filename)
         }catch(e){
            throw new BadRequestException(e)
         }
         
-        return {success: true}
+        return photo
     }
 
     @UseInterceptors(FilesInterceptor('files'))
